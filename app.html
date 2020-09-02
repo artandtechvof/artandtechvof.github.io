@@ -129,6 +129,7 @@
   color: #FFFFFF;
   border: 0px;
   text-align: center;
+  text-align-last:center;
 }
 
 .myinput {
@@ -265,6 +266,7 @@ input[type="color"].custom {
 <meta name="msapplication-TileImage" content="icon.png">
 <meta name="msapplication-TileColor" content="#2F3BA2">
 <meta name=viewport content='width=850'>
+<script src="http://localhost:8080/socket.io/socket.io.js"></script>
 </head>
 <body onload='Init();'>
 
@@ -305,6 +307,10 @@ var style_lines;
 var named_styles = {};
 var tracks_listed = false;
 
+//socket vars
+var socket;
+var connected_serial = false;
+
 function SendNext() {
   if (!current_packet) {
     if (!send_buf.length) {
@@ -336,7 +342,7 @@ function Die(e) {
 
 function OnData(data) {
   data = new TextDecoder().decode(data);
-  // console.log("GOT DATA: " + data);
+   console.log("GOT DATA: " + data);
   buffer += data;
   var tmp = buffer.split("-+=END_OUTPUT=+-");
   if (tmp.length > 1) {
@@ -384,6 +390,12 @@ function RunWatchDog() {
 }
 
 function Send(cmd) {
+  
+  if (connected_serial){
+      SocketSend(cmd);
+	  return;
+	}
+  
   var data = new TextEncoder('utf-8').encode(cmd + '\n');
   // console.log(usb_device);
   if (usb_device) {
@@ -619,10 +631,26 @@ function make_variation_field(value) {
   return ret;
 }
 
+function SaveBrightness() {
+  var font_select = document.getElementById('brightness_slider');
+  console.log("SAVE BRIGHTNESS " + brightness_slider.value);
+  brightness_ = brightness_slider.value;
+  Send("dim " + brightness_slider.value);
+}
+
+var brightness_ =100;
+
+function make_brightness_field(value) {
+  var ret = "<div class=edit>";
+  ret += "<span class=title>brightness<br><input type=range min=0 max=100 class=slider id=brightness_slider value='"+value+"' onchange='SaveBrightness()'>";
+  ret += "</span></span></div>\n"; 
+  return ret;
+}
 
 function SaveFont() {
   var font_select = document.getElementById('font_select');
   console.log("SAVE FONT " + font_select.value);
+  var banaan = font_select.value.split(";");
   if (presets[current_preset_num].FONT != font_select.value) {
     presets[current_preset_num].FONT = font_select.value;
     Send("set_font " + font_select.value);
@@ -665,10 +693,11 @@ function updateEditPane(preset) {
   }
   var edit_pane = document.getElementById('edit_pane2');
   tmp += make_variation_field(presets[preset].VARIATION);
+  tmp += make_brightness_field(brightness_);
   console.log(edit_pane);  
   edit_pane.innerHTML = tmp;
 }
-
+make_brightness_field
 var current_preset_num = -1;
 function showCurrentPreset(preset) {
   preset = parseInt(preset);
@@ -742,9 +771,12 @@ async function DropEvent(n) {
 }
 
 async function AddPreset() {
-  Send("duplicate_preset " + presets.length);
-  presets.push(Object.assign({}, presets[current_preset_num]));
-  UpdatePresets();
+  var r = confirm("Duplicate current preset?");
+  if (r == true) {
+	  Send("duplicate_preset " + presets.length);
+	  presets.push(Object.assign({}, presets[current_preset_num]));
+	  UpdatePresets();
+  }
 }
 
 async function DelPreset() {
@@ -757,6 +789,13 @@ async function DelPreset() {
     SetPreset(0);
   }
   UpdatePresets();
+}
+
+async function DelConfirm() {
+  var r = confirm("Delete current preset?");
+  if (r == true) {
+    DelPreset();
+  } 
 }
 
 async function PlayTrack(track) {
@@ -940,7 +979,7 @@ function UpdatePresets() {
     preset_string += "<div class=preset onclick='AddPreset()'>";
     preset_string += "<span class=title2>+</span>";
     preset_string += "</div>";
-    preset_string += "<div class=preset ondrop='DelPreset()'>";
+    preset_string += "<div class=preset ondrop='DelPreset()' onclick=DelConfirm()>";
     preset_string += "<span class=title2>&#x1F5D1;</span>";
     preset_string += "</div>";
   }
@@ -961,7 +1000,7 @@ var UARTs = {
   "569a1101-b87f-490c-92cb-11ba5ea5167c" : { rx:"569a2001-b87f-490c-92cb-11ba5ea5167c", tx:"569a2000-b87f-490c-92cb-11ba5ea5167c"},  //Laird BL600 Virtual Serial Port Service
 };
 
-
+//BLE
 async function Run() {
   document.getElementById('EMSG').innerHTML = '';
   if (!device) {
@@ -983,6 +1022,7 @@ async function Run() {
   Run2();
 }
 
+//Common for all forms of communication
 async function Run2() {
   document.getElementById('while_connected').style.visibility='visible';  
   document.getElementById('while_disconnected').style.visibility='hidden';  
@@ -1016,6 +1056,7 @@ async function Run2() {
   DoRunLoop()
 }
 
+//WebUSB
 async function RunUSB() {
   document.getElementById('EMSG').innerHTML = '';
   var filters = [
@@ -1074,17 +1115,112 @@ async function RunUSB() {
   }
 }    
 
+var statusInterval; 
+var reply = false;
+
 async function RunSerial() {
 
+  console.log('connecting to localhost 8080');
+
+  socket = io.connect('ws://localhost:8080');
+
+  console.log('connected');
+ 
+  connected_serial = true;
   
+  statusInterval = setInterval(statusTimer, 250);
+
+  console.log('status update timer');
+
+  socket.on('led', function (data) {
+			console.log('Rx led: ' + data);
+			//document.getElementById("statusbox").value = data;
+			//document.getElementById("outputText").innerHTML = data.value;
+  });
+
+  socket.on('status', function (data) {
+			console.log('Rx status: ' + data);
+			reply = true;
+			//document.getElementById("statusbox").value = data;
+  });
+
+  socket.on('message', function (data) {
+			console.log('Rx message: ' + data);
+			//document.getElementById("statusbox").value = data;
+  });
+
+
+  socket.on('var', function (data) {
+			console.log('Rx var: ' + data);
+			//document.getElementById("inputSlider2").value = data.value;
+			//document.getElementById("outputText2").innerHTML = data.value;
+  });
+   
   //usb_device.transferOut(endpointOut,
   //  new TextEncoder('utf-8').encode("\n\n"));  
-  Run2();
-  while (true) {
-    var data = await usb_device.transferIn(endpointIn, 64);
-    OnData(data.data);
-  }
+  //Run2();
+  //while (true) {
+  //  var data = await usb_device.transferIn(endpointIn, 64);
+  //  OnData(data.data);
+  //}
 }    
+
+
+
+var send_state = 0;
+
+async function SocketSend(data){
+   socket.send(data);
+   console.log('Sending: ' + data);
+   //check for answer
+   var reply = false
+   console.log('Requesting status: ');
+   while (!reply){
+	 socket.emit('status',''); //alias for socket.emit('message','set_volume ', { value: newValue })
+     await sleep(50);
+   }
+}
+
+function saberStatus(newValue)
+	{
+
+			switch(send_state) {
+			  case 0:
+					SocketSend('get_preset');
+					send_state += 1;
+				break;
+			  case 1:
+					SocketSend('get_track');
+					send_state += 1;
+				break;
+			  case 2:
+					SocketSend('get_volume');
+					send_state += 1;
+				break;
+			  case 3:
+					SocketSend('battery_voltage');
+					send_state += 1;
+				break;
+			  case 4:
+					SocketSend('get_on');
+					send_state = 0;		
+				break;
+			}			
+
+			
+			//if (togle_){
+			//	socket.send('on');
+			//	togle_ =  false;
+		    //}else{
+			//	socket.send('off');
+			//	togle_ =  true;
+			//}
+	}
+
+function statusTimer() {
+  saberStatus()
+}
+
 
 var loop_running = false;
 async function DoRunLoop() {
@@ -1141,7 +1277,11 @@ async function Loop() {
     // Listing tracks tends to interrupt whatever is currently playing so
     // let's wait until the saber is off and not playing a track before
     // we fetch the list of tracks.
-    if (tracks_listed == false && parseInt(on) == 0 && current_track == "") {
+
+    // no longer the case, so we can update whenever we want
+    //if (tracks_listed == false && parseInt(on) == 0 && current_track == "") {
+    if (tracks_listed == false && current_track == "") {
+    //if (true) {
       tracks_listed = true;
       track_lines = await GetList("list_tracks");
       track_string = "";
@@ -1204,10 +1344,10 @@ function Init() {
     document.getElementById('connect_ble').style.visibility='visible';
     err = false;
   }
-  if (true) {
-    document.getElementById('connect_serial').style.visibility='visible';
-    err = false;
-  }
+  //if (true) {
+  //  document.getElementById('connect_serial').style.visibility='visible';
+  //  err = false;
+  //}
   if (err) {
     document.getElementById('EMSG').innerHTML = "This browser supports neither webusb nor web bluetooth.";
   }
