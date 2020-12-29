@@ -966,10 +966,14 @@ function dumpChar(c) {
 
 async function Connect() {
   try {
-    let rxUuid = '713d0002-389c-f637-b1d7-91b361ae7678';
-    let txUuid = '713d0003-389c-f637-b1d7-91b361ae7678';
-    let pwUuid = '713d0004-389c-f637-b1d7-91b361ae7678';
-    let statusUuid = '713d0005-389c-f637-b1d7-91b361ae7678';
+//    let rxUuid = '713d0002-389c-f637-b1d7-91b361ae7678';
+//    let txUuid = '713d0003-389c-f637-b1d7-91b361ae7678';
+//    let pwUuid = '713d0004-389c-f637-b1d7-91b361ae7678';
+//    let statusUuid = '713d0005-389c-f637-b1d7-91b361ae7678';
+    let rxUuid = '0000fff1-0000-1000-8000-00805f9b34fb';
+    let txUuid = '0000fff2-0000-1000-8000-00805f9b34fb';
+    let pwUuid = '0000fff3-0000-1000-8000-00805f9b34fb';
+    let statusUuid = '0000fff4-0000-1000-8000-00805f9b34fb';
 
     console.log('Connecting to GATT Server...');
     server = await device.gatt.connect();
@@ -1002,7 +1006,7 @@ async function Connect() {
     if (pwUuid) pw = await service.getCharacteristic(pwUuid);
     if (statusUuid) status = await service.getCharacteristic(statusUuid);
 
-    if (1) {
+    if (0) {
       dumpChar(rx);
       dumpChar(tx);
       dumpChar(pw);
