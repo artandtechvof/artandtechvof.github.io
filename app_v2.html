@@ -222,17 +222,12 @@ html,
 }
 
 .content,
-.scrollable {
-  flex: 1;
-}
-
+.scrollable,
 .edit_scrollable {
   flex: 1;
-  overflow: auto;
-  align: center;
-  height: 90%;
 }
 
+.edit_scrollable,
 .scrollable {
   overflow: auto;
   align: center;
@@ -1412,7 +1407,7 @@ function Init() {
 
 <div class="top" id=top_message>
   <div class=editbutton  style='visibility:hidden;' id=editbutton onclick='ToggleEditMode()'>&#x270E;</div>
-  <div class=appname>Proffieos Control v2.3</div><br/>
+  <div class=appname>Proffieos Control v2</div><br/>
       <div class="slidecontainer">
       Volume: <input id=volume type=range min=0 max=2000 class="slider" style="width:50%" oninput='UpdateVolume();' onchange='UpdateVolume();'>
       </div>
