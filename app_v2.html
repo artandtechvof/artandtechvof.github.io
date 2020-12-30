@@ -976,6 +976,10 @@ async function Connect() {
     let statusUuid = '0000fff4-0000-1000-8000-00805f9b34fb';
 
     console.log('Connecting to GATT Server...');
+	//if already connected, disconnect first
+	if (device.gatt.connected) {
+     devicice.gatt.disconnect();
+    }
     server = await device.gatt.connect();
     console.log(server)
     console.log(device.allowedServices);
@@ -1027,6 +1031,7 @@ async function Connect() {
   catch (e) {
     console.log(e);
     document.getElementById('EMSG').innerHTML = 'Connection Failed';
+	server = await device.gatt.disconnect();
     throw e;
   }
 
