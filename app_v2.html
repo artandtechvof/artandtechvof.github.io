@@ -1035,14 +1035,14 @@ async function Connect() {
     document.getElementById('EMSG').innerHTML = 'Connection Failed';
 	server = await device.gatt.disconnect();
 	//unpair for next time
-	try {
-        Method removeBond = BluetoothDevice.class.getMethod("removeBond");
-        return (boolean) removeBond.invoke(device);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
-    }
-    throw e;
+//	try {
+//        Method removeBond = BluetoothDevice.class.getMethod("removeBond");
+//        return (boolean) removeBond.invoke(device);
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//        return false;
+//    }
+//    throw e;
   }
 
   if (pw) {
