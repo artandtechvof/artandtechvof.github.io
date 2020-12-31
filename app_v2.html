@@ -990,6 +990,7 @@ async function Connect() {
         service = await server.getPrimaryService(uuid);
       } catch (e) {
         console.log(e);
+		
 		if (!device.gatt.connected) {
 		 devicice.gatt.connect();
 		}
@@ -1033,6 +1034,14 @@ async function Connect() {
     console.log(e);
     document.getElementById('EMSG').innerHTML = 'Connection Failed';
 	server = await device.gatt.disconnect();
+	//unpair for next time
+	try {
+        Method removeBond = BluetoothDevice.class.getMethod("removeBond");
+        return (boolean) removeBond.invoke(device);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
     throw e;
   }
 
@@ -1410,7 +1419,7 @@ function Init() {
 
 <div class="top" id=top_message>
   <div class=editbutton  style='visibility:hidden;' id=editbutton onclick='ToggleEditMode()'>&#x270E;</div>
-  <div class=appname>Proffieos Control v2</div><br/>
+  <div class=appname>Proffieos Control v2.1</div><br/>
       <div class="slidecontainer">
       Volume: <input id=volume type=range min=0 max=2000 class="slider" style="width:50%" oninput='UpdateVolume();' onchange='UpdateVolume();'>
       </div>
