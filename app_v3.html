@@ -1466,15 +1466,17 @@ async function Loop() {
       }
       for (var l = 0; l < dir_lines.length; l++) {
           var tmp = dir_lines[l].split("."); //remove init files etc
+		  var shifted = false;
           if (tmp.length == 2) { //we have file in stead of folder
             dir_lines.splice(l,1); //remove line that is not a directory
-            l -= 1; // because we shifted down we need to check value on same position
+            shifted = true; // because we shifted down we need to check value on same position
           }
           tmp = dir_lines[l].split("~"); //remove too long names
           if (tmp.length == 2) { //we have too long name
             dir_lines.splice(l,1); //remove line that is not a directory
-            l -= 1; // because we shifted down we need to check value on same position
+            shifted = true; // because we shifted down we need to check value on same position
           }
+		  if (shifted) l -= 1;
 	  }
       dir_lines.sort(); // just nicer to see all folders alphabeticaly
       for (var l = 0; l < presets.length; l++){
