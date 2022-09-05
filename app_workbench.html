@@ -1422,7 +1422,8 @@ async function Loop() {
       FIND('tracks').innerHTML = track_string;
       font_lines = await GetList("list_fonts");
       for (var i = 0; i < font_lines.length; i++) {
-        font_lines[i] += ";common";
+        // font_lines[i] += ";common";
+	font_lines[i] = "common;" + font_lines[i]; //put common first for generic bootsound etc      
       }
       style_lines = await GetList("list_named_styles");
       named_styles = { };
