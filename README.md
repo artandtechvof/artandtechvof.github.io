@@ -1,15 +1,15 @@
 # web-bluetooth controllers
 
-Lightsaber
+Teensy Art&Tech Lightsaber;
 Try it: http://artandtechvof.github.io/app_v3.html
 
-ProffieOS
+ProffieOS Art&Tech flavor;
 Try it: http://artandtechvof.github.io/app_workbench.html
 
-Pixelstaff
+Pixelstaff;
 Try it: http://artandtechvof.github.io/app_pixelstaff.html
 
-Voicebox 
+Voicebox;
 Try it: http://artandtechvof.github.io/app_voicebox.html
 
 
