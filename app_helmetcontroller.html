@@ -929,14 +929,14 @@ async function UpdateSlider(cmd, slider, label, fn) {
   var label_tag = FIND(label);
   var value = slider_tag.value;
   //label_tag.innerHTML = value;
-  if (value == volume_old) return;
+  //if (value == volume_old) return;
   console.log("Updating Volume");
   if (updating_sliders[slider]) return;
   updating_sliders[slider] = true;
 //  while (true) {
 //    await Send(cmd + " " + (fn ? fn(value) : value));
     Send(cmd + " " + (fn ? fn(value) : value));
-	volume_old = value;
+	//volume_old = value;
 //    var old = value;
 //    value = label_tag.innerHTML;
 //    if (old == value) break;
@@ -947,6 +947,9 @@ async function UpdateSlider(cmd, slider, label, fn) {
 
 async function UpdateVolume() {
   UpdateSlider("set_volume", "volume", "volume_label");
+}
+async function UpdateVariation() {
+  UpdateSlider("set_variation", "variation", "variation_label");
 }
 async function UpdateVolumeBT() {
   UpdateSlider("set_volume_bt", "volumebt", "volumebt_label");
@@ -1609,7 +1612,11 @@ function Init() {
       Battery: <span id=voltage>---</span> volts.
 	  <br>
       <div class="slidecontainer">
-      Volume:  <br> <input id=volume type=range min=0 max=20 class="slider" style="width:90%" oninput='UpdateVolume();' onchange='UpdateVolume();'><span id=volume_label>VOL</span>
+      Volume:  <br> <input id=volume type=range min=1 max=30 class="slider" style="width:90%" oninput='UpdateVolume();' onchange='UpdateVolume();'><span id=volume_label>VOL</span>
+      </div>
+	  <br><br>
+      <div class="slidecontainer">
+      Variation:  <br> <input id=variation type=range min=1 max=30 class="slider" style="width:90%" oninput='UpdateVariation();' onchange='UpdateVariation();'><span id=varaition_label>VAR</span>
       </div>
 	  <br><br>
   <span id=reconnecting_message style='visibility:hidden;'>
