@@ -20,6 +20,9 @@ Helmet with qouteplayer and voice-changer;
 
 Try it: http://artandtechvof.github.io/app_helmetcontroller.html
 
+Harp controller;
+
+Try it: http://artandtechvof.github.io/app_harp.html
 
 For iOS use WebBLE-App (paid) to get these apps working 
 https://apps.apple.com/us/app/webble/id1193531073
